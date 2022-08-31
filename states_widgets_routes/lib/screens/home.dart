@@ -10,20 +10,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Language> languages = [
-    Language("Android Native", "Languages C, Java and Kotlin"),
-    Language("Android Native", "Languages C, Java and Kotlin"),
-    Language("Android Native", "Languages C, Java and Kotlin"),
-    Language("Android Native", "Languages C, Java and Kotlin"),
-    Language("Android Native", "Languages C, Java and Kotlin"),
-  ]; 
+  List<Language> languages = [];
 
   Widget title = const Text("My Languages");
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: title),
+    return 
+    Scaffold(
+      appBar: AppBar(title: title,
+       actions: [
+        IconButton(onPressed: _goToAddLanguage, icon: const Icon(Icons.add))
+      ]),
+  
       body: Column(children: [
         Wrap(
           spacing: 10,
@@ -33,6 +32,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ]),
     );
   }
+
+  void _goToAddLanguage(){
+    Future future = Navigator.pushNamed(context, "/add"); 
+    future.then((value) => setState((){
+      languages.add(value); 
+    }));
+  }
   
   List<ChoiceChip> buildChoices() {
     return languages.map((l) => ChoiceChip(
@@ -41,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
       onSelected: (value) => setState(() {
         l.selected = value;
       }))).toList(); 
-  
   }
 
   List<Widget> buildItemsList() {

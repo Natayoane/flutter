@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:states_widgets_routes/screens/add.dart';
 
 import 'screens/home.dart';
 
@@ -16,7 +17,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
-    );
+      initialRoute: "/",
+      routes: {
+        "/": (context) => const MyHomePage(),
+        "/add": (context) => AddLanguage(),
+      });
   }
 }
