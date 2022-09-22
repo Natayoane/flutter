@@ -3,6 +3,7 @@ package com.example.plataform_channel_game
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import com.google.gson.JsonElement
 import com.pubnub.api.PNConfiguration
 import com.pubnub.api.PubNub
 import com.pubnub.api.callbacks.SubscribeCallback
@@ -32,14 +33,33 @@ class MainActivity: FlutterActivity() {
 
         handler = Handler(Looper.getMainLooper())
 
-        val pnConfiguration = PNConfiguration("sub-c-e898ac8b-4029-4b29-97f1-93576b217733")
-        pnConfiguration.publishKey = "pub-c-b8586631-7be0-44d8-898f-49371e361d88"
+        val pnConfiguration = PNConfiguration("myUniqueUUID")
+        pnConfiguration.subscribeKey = "sub-c-f3d65090-60b9-4359-8945-c2085f594a67"
+        pnConfiguration.publishKey = "pub-c-406fecee-44fc-4ff6-87eb-51751cafef56"
         pubnub = PubNub(pnConfiguration)
+        Log.e("Pubnub", "${pubnub}")
 
         pubnub?.let {
             it.addListener(object : SubscribeCallback(){
+
+                override fun message(pubnub: PubNub, message: PNMessageResult) {
+                    var receivedObject: JsonElement? = null
+                    var actionReceived = "sendAction"
+                    if(message.message.asJsonObject["tap"] != null){
+                        receivedObject = message.message.asJsonObject["tap"]
+                    }
+
+                    Log.e("pubnub messa", "${receivedObject}")
+
+                    handler?.let{
+                        it.post{
+                           MethodChannel( flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL_NATIVE_DART)
+                               .invokeMethod(actionReceived, "${receivedObject?.asString}")
+                        }
+                    }
+                }
+
                 override fun status(pubnub: PubNub, pnStatus: PNStatus) {}
-                override fun message(pubnub: PubNub, pnMessageResult: PNMessageResult) {}
                 override fun presence(pubnub: PubNub, pnPresenceEventResult: PNPresenceEventResult) {}
                 override fun signal(pubnub: PubNub, pnSignalResult: PNSignalResult) {}
                 override fun uuid(pubnub: PubNub, pnUUIDMetadataResult: PNUUIDMetadataResult) {}
@@ -55,8 +75,7 @@ class MainActivity: FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
          MethodChannel(
-             flutterEngine.dartExecutor.binaryMessenger,
-             CHANNEL_NATIVE_DART
+             flutterEngine.dartExecutor.binaryMessenger, CHANNEL_NATIVE_DART
          ).setMethodCallHandler { call, result ->
 
              if (call.method == "subscribe") {
@@ -65,6 +84,9 @@ class MainActivity: FlutterActivity() {
                  result.success(true)
              }
              else if (call.method == "sendAction"){
+                 Log.e("sendAction", "${pubnub}")
+                 Log.e("sendAction", "${call.arguments}")
+                 Log.e("sendAction", "${channel_pubnub}")
                  pubnub!!.publish()
                      .message(call.arguments)
                      .channel(channel_pubnub)
